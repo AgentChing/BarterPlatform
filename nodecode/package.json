@@ -1,0 +1,14 @@
+{
+  "name": "mediator",
+  "version": "1.0.0",
+  "description": "mediates all requests in between client and database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ashwin",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
