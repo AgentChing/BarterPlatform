@@ -1,5 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb+srv://Ashwin:Letm31n4now@barterbin.pwri7sd.mongodb.net/?retryWrites=true&w=majority');
 
 const app = express();
 app.use(bodyParser.urlencoded({extended:false}));

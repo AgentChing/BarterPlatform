@@ -4,9 +4,11 @@ const productSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     name: String,
     price: Number,
-    tags:[String],
-    intrestedtags:[String],
-    bids:[String]
+    enlister: mongoose.Schema.Types.ObjectId,
+    description: String,
+    tags: String,
+    intrestedtags:Array,
+    bids: [String]
 });
 
 module.exports = mongoose.model('Product',productSchema);
