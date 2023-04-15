@@ -5,10 +5,10 @@ const productSchema = mongoose.Schema({
     name: String,
     price: Number,
     enlister: mongoose.Schema.Types.ObjectId,
-    description: String,
-    tags: String,
-    intrestedtags:Array,
-    bids: [String]
+    description: {type:String, default:''},
+    tags: [String],
+    intrestedtags:[String],
+    status:{type:String,default:'free'}
 });
 
 module.exports = mongoose.model('Product',productSchema);

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../schema/product');
+const User = require('../schema/user');
 const mongoose = require('mongoose');
 
 router.get('/',(req,res,next)=>{
@@ -31,32 +32,62 @@ router.get('/:productId',(req,res,next)=>{
 
 
 router.post('/',(req,res,next)=>{
-   
-    const productdata = {
-        name: req.body.name,
-        price: req.body.price,
-        description: req.body.description,
-        postedby: req.params.userId,
-        tags: req.body.tags,
-        intrested: req.body.intrestedtags,
-        bids: req.body.bids
-    }
     
-    const prod = new Product({
+    const action = req.body.action;
+    if(action === 'addProduct')
+    {
+        const prod = new Product({
+            _id: new mongoose.Types.ObjectId(),
+            name:req.body.name,
+            price: req.body.price,
+            enlister: req.body.enlisterid,
+            description: req.body.description,
+            tags: req.body.tags,
+            intrestedtags: req.body.intrestedtags,
+            bids: req.body.bids,
+            status: req.body.status
+        }); 
+        prod.save().then(result=>{console.log(result); res.status(200).json({message: 'product added sucessfully'});}).catch(err=>console.log(err));
+    }
+    else if(action === 'addUser')
+    {
+        const user = new User({
+            _id: new mongoose.Types.ObjectId(),
+            Name: req.body.name,
+            Password: req.body.password,
+            Email: req.body.email,
+            Address:req.body.address,
+            Inventory:[],
+            History:[],
+            Auction:[],
+            Mybids:[]
+        });
+        user.save().then(result=>{console.log(result); res.status(200).json({message: 'User added sucessfully'});}).catch(err=>console.log(err));
+    
+    }
+});
+
+
+router.post('/user',(req,res,next)=>{
+    const user = new User({
         _id: new mongoose.Types.ObjectId(),
-        name:req.body.name,
-        price: req.body.price,
-        enlister: req.body.enlisterid,
-        description: req.body.description,
-        tags: req.body.tags,
-        intrestedtags: req.body.intrestedtags,
-        bids: req.body.bids
-    }); 
-    prod.save().then(result=>{console.log(result);}).catch(err=>console.log(err));
-    res.status(200).json({
-        message:'adding this product to the product list',
-        desc: productdata
+        Name: req.body.name,
+        Password: req.body.password,
+        Email: req.body.email,
+        Address:req.body.address,
+        Inventory:req.body.inventory,
+        History:req.body.history,
+        Auction:req.body.auction,
+        Mybids:req.body.mybids
+
     });
+    user.save().then(result=>{
+        console.log(result);
+        res.status(200).json(result);
+    }).catch(err=>{
+        console.log(err);
+        res.status(500).json({error:err});
+    })
 });
 
 
