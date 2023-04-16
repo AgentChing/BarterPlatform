@@ -16,21 +16,39 @@ router.post('/',(req,res,next)=>{
     if(action === 'addproduct')
     {
         const data = req.body.data;
-        const prod = new Product({
-            _id: new mongoose.Types.ObjectId(),
-            name: data.name,
-            price: data.price,
-            enlister: data.enlister,
-            description: data.description,
-            tags: data.tags,
-            intrestedtags:data.intrestedtags,
-            status:data.status
-        });
-        prod.save().then(result=>{console.log(result);res.status(200).json({message:'product added',output:result});}).catch(err=>{
+        User.findById(req.body.target).exec().then(m=>{
+            const prod = new Product({
+                _id: new mongoose.Types.ObjectId(),
+                name: data.name,
+                price: data.price,
+                enlister: req.body.target,
+                description: data.description,
+                tags: data.tags,
+                intrestedtags:data.intrestedtags,
+                status:data.status
+            });
+
+            const err={addingproduct:"done",updatinginventory:"done"};
+            const returnstatus = 200;
+            prod.save().then(result=>{
+                User.findByIdAndUpdate(req.body.target,{$addToSet:{Inventory:prod._id}},{new:true, runValidators:true, returnDocument:true}).exec().then(doc=>{
+                    console.log(doc);
+                }).catch(err1=>{
+                    err.updatinginventory=err1;
+                    returnstatus=500;
+                })
+            }).catch(err2=>{
+                err.addingproduct=err2;
+                returnstatus=500;
+            })
+            res.status(returnstatus).json(err);
+            return;
+        }).catch(err=>{
             console.log(err);
-            res.status(500).json({error:err});
-        });
+            res.status(200).json({message:'no such user is present'});
+        })
     }
+    
     else if(action === 'adduser')
     {
         const data = req.body.data;
@@ -63,7 +81,17 @@ router.post('/',(req,res,next)=>{
 router.patch('/',(req,res,next)=>{
     const action = req.body.action;
     
-    
+    if(action === 'addproduct')
+    {
+        User.findByIdAndUpdate(req.body.target,{$addToSet:{Inventory:req.body.data}},{new:true, runValidators:false, returnDocument:true}).exec().then(result=>{
+            console.log('done');
+            res.status(500).json({message:'added product', productdetails:result});
+        }).catch(err=>{
+            console.log(err);
+            res.status(500).json({error:err});
+        });
+    }
+
 
 })
 
