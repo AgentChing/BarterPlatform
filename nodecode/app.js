@@ -19,7 +19,7 @@ app.use((req,res,next)=>{
     next();
 });
 
-const productroute = require('./routes/products');
+const productroute = require('./routes/processor');
 
 app.use('/products',productroute);
 

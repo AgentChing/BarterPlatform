@@ -8,7 +8,7 @@ const userSchema = mongoose.Schema({
     Email: String,
     Address:{type:String,default:''},
     Inventory:[String],
-    History:[{auctionitemId:String,bidId:String}],
+    History:{type:[{auctionitemId:String,bidId:String}],default:[]},
     Auction:[{auctionitemId:String,bidIds:[String]}],
     Mybids:[{auctionitemId:String,bidId:String,Status:{type:String,default:'ignored'}}]
 

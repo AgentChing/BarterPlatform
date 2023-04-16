@@ -65,6 +65,7 @@ router.post('/',(req,res,next)=>{
         user.save().then(result=>{console.log(result); res.status(200).json({message: 'User added sucessfully'});}).catch(err=>console.log(err));
     
     }
+    
 });
 
 
