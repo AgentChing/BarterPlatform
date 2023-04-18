@@ -3,7 +3,7 @@ const router = express.Router();
 const Product = require('../schema/product');
 const User = require('../schema/user');
 const mongoose = require('mongoose');
-
+const productMethods = require('../methods/productmethods');
 
 router.get('/',(req,res,next)=>{
     const action = req.body.action;
@@ -15,6 +15,13 @@ router.post('/',(req,res,next)=>{
     const action = req.body.action;
     if(action === 'addproduct')
     {
+
+        const doc = productMethods.addProduct(req.body.target,req.body.data)
+        res.status(parseInt(doc.returnstatus,10)).json({message:doc.message,data:doc.returnstatement});
+        
+
+        
+        /*
         const data = req.body.data;
         User.findById(req.body.target).exec().then(m=>{
             const prod = new Product({
@@ -47,6 +54,7 @@ router.post('/',(req,res,next)=>{
             console.log(err);
             res.status(200).json({message:'no such user is present'});
         })
+        */
     }
     
     else if(action === 'adduser')
