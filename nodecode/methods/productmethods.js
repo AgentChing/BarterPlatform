@@ -5,7 +5,7 @@ const express = require('express');
 const Product = require('../schema/product');
 const User = require('../schema/user');
 const userMethods = require('./usermethods');
-
+const categoryMethods = require('../methods/categorymethods');
 
 function addProduct (targetId,productBody)
 {
@@ -36,6 +36,15 @@ function addProduct (targetId,productBody)
            }
            else{
                 returnbody.message=returnbody.message+' and Updated Inventory.';
+                const doc = categoryMethods.addtoCategories(idval);
+                if(doc.returnstatus === '200')
+                {
+                    returnbody.message=returnbody.message+' And Updated categories as well';
+                }
+                else{
+                    returnbody.message = 'failed in process of updating categories';
+                    returnbody.returnstatus=500;
+                }
            } 
            return result;
         }).catch(err1=>{
@@ -47,10 +56,10 @@ function addProduct (targetId,productBody)
         returnbody.message=err;
         returnbody.returnstatus=500;
     })
-if(returnbody.returnstatus === '200')
-{
-    returnbody.returnstatement = idval;
-}
+    if(returnbody.returnstatus === '200')
+    {
+        returnbody.returnstatement = idval;
+    }
 return returnbody;
 
 }

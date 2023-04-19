@@ -4,6 +4,8 @@ const Product = require('../schema/product');
 const User = require('../schema/user');
 const mongoose = require('mongoose');
 const productMethods = require('../methods/productmethods');
+const userMethods = require('../methods/usermethods');
+const categoryMethods = require('../methods/categorymethods');
 
 router.get('/',(req,res,next)=>{
     const action = req.body.action;
