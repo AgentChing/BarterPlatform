@@ -12,6 +12,7 @@ router.get('/',(req,res,next)=>{
     const userid = req.body.userid;
     if(action === 'getlist')
     {
+       // const filter = req.body.filter;
        Product.find({enlister:{$ne:userid}}).exec().then(result=>{
         res.status(200).json(result);
        }).catch(err=>{
