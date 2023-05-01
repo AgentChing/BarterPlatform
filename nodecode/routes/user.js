@@ -28,10 +28,10 @@ router.post('/',async (req,res,next)=>{
         })
 
         user.save().then(result=>{
-            delete result.data.password;
+            delete result.password;
             res.status(200).json({message:'user added',return:user._id,result:result});
         }).catch(err=>{
-            res.status(500).json({message:'user could not be added',return:'',result:result});
+            res.status(500).json({message:'user could not be added',return:'',result:err});
         })
     }
     else if(action ==='signin')
@@ -61,6 +61,21 @@ router.post('/',async (req,res,next)=>{
     }
 });
 
+router.delete('/',(req,res,next)=>{
+    const action = req.body.action;
+    const userid = req.body.userid;
+    if(action === 'deleteuser')
+    {
+        User.findByIdAndDelete(userid).exec().then(result=>{
+            res.status(200).json(result);
+        }).catch(err=>{
+            res.status(500).json({error:err});
+        })
+    }
+    else{
+
+    }
+});
 
 
 module.exports = router;

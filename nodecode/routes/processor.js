@@ -64,9 +64,13 @@ router.get('/',(req,res,next)=>{
             res.status(500).json({error:'user not found'});
         });
     }
-    else if(action === 'getProduct')
+    else if(action === 'getproductinfo')
     {
-       
+        Product.findById(req.body.target).then(resut=>{
+            res.status(200).json(result);
+        }).catch(err=>{
+            res.status(500).json({error:err});
+        });
     }
     else{  
 
