@@ -1,4 +1,5 @@
 exports.addtoCategories = addtoCategories;
+exports.removefromcategories = removefromcategories;
 
 const mongoose = require('mongoose');
 const express = require('express');
@@ -45,6 +46,11 @@ function addtoCategory(tag,objectId)
     })
     return returnbody;
 }
+function removefromCategory(tag,objectId)
+{
+    Category.updateOne({name:tag},{$pull:{items:objectId}}).exec().then(result=>console.log(result)).catch(err=>console.log(err));
+}
+
 function addtoCategories(objectId)
 {
     const returnbody={message:"Category Updated",returnstatus:"200",returnstatement:{}};
@@ -69,4 +75,23 @@ function addtoCategories(objectId)
     });
 
     return returnbody;
+}
+
+function removefromcategories(objectId)
+{
+    Product.findById(objectId).exec().then(obj=>{
+        for(let i = 0; i < obj.tags.length;i++)
+        {
+            console.log('down is the obj');
+            console.log(obj);
+            Category.findOne({name:obj.tags[i]}).exec().then(category=>{
+                if(category)
+                {
+                    removefromCategory(obj.tags[i],obj._id);
+                }
+            })
+        }
+    }).catch(err=>{
+        console.log(err);
+    })
 }

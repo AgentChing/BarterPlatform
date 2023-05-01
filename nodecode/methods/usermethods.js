@@ -1,9 +1,44 @@
 exports.addtoInventory = addtoInventory;
 exports.addnewUser = addnewUser;
+exports.fetchUserData = fetchUserData;
+exports.checkuser = checkuser;
 const mongoose = require('mongoose');
 const express = require('express');
 const Product = require('../schema/product');
 const User = require('../schema/user');
+
+async function checkuser(email,password)
+{
+    const returnbody={message:"",returnstatus:"",returnstatement:{}};
+        User.findOne({Email:email}).exec().then(user=>{
+            if(user)
+            {
+                if(user.Password === password)
+                {
+                    console.log('found user');
+                    returnbody.message = 'user found';
+                    returnbody.returnstatus = 200;
+                    returnbody.returnstatement = user._id;
+                    return returnbody;
+                }
+                else{
+                    returnbody.message = 'invalid credentials';
+                    returnbody.returnstatus = 404;
+                    return returnbody;
+                }
+            }
+            else{
+                returnbody.message = 'invalid credentials';
+                    returnbody.returnstatus = 404;
+                    return returnbody;
+            }
+        }).catch(err=>{
+            returnbody.message = 'error fetching user';
+            returnbody.returnstatus = 500;
+            returnbody.returnstatement = err;
+            return returnbody;
+        });
+}
 
 function addnewUser(userdata)
 {
@@ -42,4 +77,40 @@ function addtoInventory(inventoryOwnerId,productId)
     })
 
     return returnbody;
+}
+
+async function fetchUserData(username,userpassword,userId = '')
+{
+    const returnbody={message:"User Found",returnstatus:"200",returnstatement:{}};
+    if(userId === '')
+    {
+        returnbody.returnstatement = User.findOne({Name:username,Password:userpassword}).exec().then(result=>{
+            if(result)
+            {
+                
+                return result;
+            }
+            else
+            {
+                returnbody.returnstatus = 500;
+                returnbody.message = 'Could not find user';
+            }
+        })
+        
+    }
+    else{
+        User.findById(userId).exec().then(result=>{
+            if(result)
+            {
+                return result;
+            }
+            else
+            {
+                returnbody.returnstatus = 500;
+                returnbody.message = 'Could not find user';
+            }
+        })
+    }
+    return returnbody;
+
 }

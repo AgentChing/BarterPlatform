@@ -20,8 +20,9 @@ app.use((req,res,next)=>{
 });
 
 const productroute = require('./routes/processor');
-
+const userroute = require('./routes/user');
 app.use('/products',productroute);
+app.use('/user',userroute);
 
 app.use((req,res,next)=>{
     res.status(200).json({

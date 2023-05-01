@@ -1,5 +1,5 @@
 exports.addProduct = addProduct;
-
+exports.getproductdetails = getproductdetails;
 const mongoose = require('mongoose');
 const express = require('express');
 const Product = require('../schema/product');
@@ -64,5 +64,9 @@ return returnbody;
 
 }
 
-
+async function getproductdetails(objId)
+{
+    let res = await Product.findById(objId);
+    return res;
+}
 
