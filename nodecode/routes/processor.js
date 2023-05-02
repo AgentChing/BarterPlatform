@@ -176,7 +176,6 @@ router.patch('/',(req,res,next)=>{
                         })
                     }
                     else{
-                        console.log(err);
                         res.status(500).json({message:'Product aint free for auctioning'});
                     }
                 }).catch(err=>{
@@ -235,6 +234,51 @@ router.patch('/',(req,res,next)=>{
         }).catch(err=>{
             console.log(err);
             res.status(500).json({message:'invalid userid',error:err});
+        })
+    }
+    else if(action === 'cancleauction')
+    {
+        aucnprodid = req.body.target;
+        Product.findById(aucnprodid).exec().then(async function(aucnprod){
+            let aucnuser = await User.findById(aucnprod.enlister).exec();
+            console.log('aucnuser '+aucnuser);
+            let aucnarray = aucnuser.Auction;
+            for(let i=0;i<aucnarray.length;i++)
+            {
+                if(aucnarray[i].auctionitemId === aucnprodid)
+                {
+                    let bidarray = aucnarray[i].bidIds;
+                    for(let j=0;j<bidarray.length;j++)
+                    {
+                        bidprod = await productMethods.getproductdetails(bidarray[j]);
+                        bidprodId = bidarray[j];
+                        User.findById(bidprod.enlister).exec().then(async function(biduser){
+                            let bidlist = biduser.Mybids;
+                            for(let k = bidlist.length-1;k>=0;k--)
+                            {
+                                if(bidlist[k].auctionitemId === aucnprodid)
+                                {
+                                    await productMethods.updateproductstatus(bidlist[k].bidId,'free');
+                                    bidlist.splice(k,1);
+                                }
+                            }
+                            await User.findByIdAndUpdate(biduser._id,{Mybids:bidlist}).exec();
+                        }).catch(err=>{
+                            console.log(err);
+                            res.status(500).json({message:'could not process bidlist',error:err});
+                        })
+                    }
+                    aucnarray.splice(i,1);
+                    console.log(aucnarray);
+                    await User.findByIdAndUpdate(aucnprod.enlister,{Auction:aucnarray}).exec();
+                    await productMethods.updateproductstatus(aucnprodid,'free');
+                    res.status(200).json({message:"cancled the Auction",removed_product:aucnprod});
+                    break;
+                }
+            }
+        }).catch(err=>{
+            console.log(err);
+            res.status(500).json({message:'could not find auction product',error:err});
         })
     }
     else{
