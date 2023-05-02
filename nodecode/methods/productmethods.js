@@ -1,5 +1,6 @@
 exports.addProduct = addProduct;
 exports.getproductdetails = getproductdetails;
+exports.updateproductstatus = updateproductstatus;
 const mongoose = require('mongoose');
 const express = require('express');
 const Product = require('../schema/product');
@@ -68,5 +69,17 @@ async function getproductdetails(objId)
 {
     let res = await Product.findById(objId);
     return res;
+}
+
+async function updateproductstatus(objId,statusval)
+{
+    let res = await Product.findByIdAndUpdate(objId,{status:statusval}).exec();
+    if(res.status === statusval)
+        {
+            return true;
+        }
+        else{
+            return false;
+        }
 }
 

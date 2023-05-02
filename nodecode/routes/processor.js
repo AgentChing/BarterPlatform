@@ -142,18 +142,37 @@ router.patch('/',(req,res,next)=>{
                 Product.findById(auctionitemid).exec().then(auctionitem=>{
                     if(auctionitem.status === 'inauction')
                     {
-                        User.findByIdAndUpdate(auctionitem.enlister,{$addToSet:{Auction:{Mybids:prodid}}},{new:true, runValidators:true, returnDocument:true}).exec()
-                        .then(updatedauction=>{
+                        User.findById(auctionitem.enlister).exec().then(user=>{
+                            console.log(user);
+                            let temparr = user.Auction;
+                            for(let i=0;i<temparr.length;i++)
+                            {
+                                if(temparr[i].auctionitemId === auctionitemid)
+                                {
+                                    console.log('here at '+i);
+                                    temparr[i].bidIds.push(prodid);
+                                    break;
+                                }
+                            }
+                            User.findByIdAndUpdate(auctionitem.enlister,{Auction:temparr},{new:true, runValidators:true, returnDocument:true}).exec().then(
+                                updatedauction=>{
+                                    console.log(updatedauction);
                             User.findByIdAndUpdate(biditem.enlister,{$addToSet:{Mybids:{auctionitemId:auctionitemid,bidId:prodid,Status:'ongoing'}}},{new:true, runValidators:true, returnDocument:true}).exec()
                             .then(updatedbid=>{
+                                Product.findByIdAndUpdate(biditem._id,{status:'inbid'},{new:true, runValidators:true, returnDocument:true}).exec();
                                 res.status(200).json({message:'bid placed',auctionitem:auctionitem,biditem:biditem});
                             }).catch(err=>{
                                 console.log(err);
                                  res.status(500).json({message:'Error updating bid item list',error:err});
                             });
+                                }
+                            ).catch(err=>{
+                                console.log(err);
+                            res.status(500).json({message:'cannot update auction list',error:err});
+                            })
                         }).catch(err=>{
                             console.log(err);
-                            res.status(500).json({message:'Error updating auction item list',error:err});
+                            res.status(500).json({message:'cannot find auctionitem owner',error:err});
                         })
                     }
                     else{
@@ -171,7 +190,51 @@ router.patch('/',(req,res,next)=>{
             }
         }).catch(err=>{
             console.log(err);
-            res.status(500).json({message:'Error finding your product',error:err});
+            res.status(500).json({message:'Error finding your product',error:err});     
+        })
+    }
+    else if(action === 'canclebid')
+    {
+        const myprod = req.body.target;
+        const myid = req.body.userid;
+        
+        User.findById(myid).exec().then(async function(me){
+            let mybids = me.Mybids;
+            for(let i=0;i<mybids.length;i++)
+            {
+                if(mybids[i].bidId === myprod)
+                {
+                    const auctionprodId = mybids[i].auctionitemId;
+                    let auctionprod = await productMethods.getproductdetails(auctionprodId);
+                    User.findById(auctionprod.enlister).exec().then(async function(aucuser){
+                        let aucnlist = aucuser.Auction;
+                        for(let j=0;j<aucnlist.length;j++)
+                        {
+                            if(aucnlist[j].auctionitemId === auctionprodId)
+                            {
+                                var position = aucnlist[j].bidIds.indexOf(myprod);
+                                if(position !== -1)
+                                {
+                                    aucnlist[j].bidIds.splice(position,1);
+                                    break;
+                                }
+                            }
+                        }
+                    await User.findByIdAndUpdate(auctionprod.enlister,{Auction:aucnlist}).exec();
+                    }).catch(err=>{
+                        console.log(err);
+                        res.status(500).json({message:'cannot update Auction list',error:err});
+                    })
+                    mybids.splice(i,1);
+                    await User.findByIdAndUpdate(myid,{Mybids:mybids}).exec();
+                    await productMethods.updateproductstatus(myprod,'free');
+                    res.status(200).json({message:"cancled the bid",removed_product:myprod});
+                    break;
+                }
+            }
+        }).catch(err=>{
+            console.log(err);
+            res.status(500).json({message:'invalid userid',error:err});
         })
     }
     else{
