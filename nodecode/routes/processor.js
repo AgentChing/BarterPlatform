@@ -109,6 +109,74 @@ router.patch('/',(req,res,next)=>{
             res.status(500).json({error:err});
         });
     }
+    else if(action === 'setupauction')
+    {
+        const prodid = req.body.target;
+        Product.findById(prodid).exec().then(result=>{
+            Product.findByIdAndUpdate(result._id,{status:'inauction'},{new:true, runValidators:true, returnDocument:true}).exec()
+            .then(result=>{
+                const temp = {auctionitemId:result._id,bidIds:new Array()};
+                User.findByIdAndUpdate(req.body.userid,{$addToSet:{Auction:temp}},{new:true, runValidators:true, returnDocument:true})
+                .exec().then(a=>{
+                    res.status(200).json({message:'auction setup complete',result:a});
+                }).catch(err=>{
+                    console.log(err);
+                    res.status(500).json({message:'Error setting up for auction',error:err});
+                });
+            }).catch(err=>{
+                console.log(err);
+                res.status(500).json({message:'Error setting up for auction',error:err});
+            });
+        }).catch(err=>{
+            console.log(err);
+            res.status(500).json({error:err});
+        })
+    }
+    else if(action === 'placebid')
+    {
+        const prodid = req.body.target;
+        const auctionitemid = req.body.target2;
+        Product.findById(prodid).exec().then(biditem=>{
+            if(biditem.status === 'free')
+            {
+                Product.findById(auctionitemid).exec().then(auctionitem=>{
+                    if(auctionitem.status === 'inauction')
+                    {
+                        User.findByIdAndUpdate(auctionitem.enlister,{$addToSet:{Auction:{Mybids:prodid}}},{new:true, runValidators:true, returnDocument:true}).exec()
+                        .then(updatedauction=>{
+                            User.findByIdAndUpdate(biditem.enlister,{$addToSet:{Mybids:{auctionitemId:auctionitemid,bidId:prodid,Status:'ongoing'}}},{new:true, runValidators:true, returnDocument:true}).exec()
+                            .then(updatedbid=>{
+                                res.status(200).json({message:'bid placed',auctionitem:auctionitem,biditem:biditem});
+                            }).catch(err=>{
+                                console.log(err);
+                                 res.status(500).json({message:'Error updating bid item list',error:err});
+                            });
+                        }).catch(err=>{
+                            console.log(err);
+                            res.status(500).json({message:'Error updating auction item list',error:err});
+                        })
+                    }
+                    else{
+                        console.log(err);
+                        res.status(500).json({message:'Product aint free for auctioning'});
+                    }
+                }).catch(err=>{
+                    console.log(err);
+                    res.status(500).json({message:'Error finding auction product',error:err});
+                })
+            }
+            else{
+                console.log(err);
+                res.status(500).json({message:'Product aint free for bidding'});
+            }
+        }).catch(err=>{
+            console.log(err);
+            res.status(500).json({message:'Error finding your product',error:err});
+        })
+    }
+    else{
+
+    }
     
 })
 
